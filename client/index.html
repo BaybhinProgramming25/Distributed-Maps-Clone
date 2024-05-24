@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  </head>
+  <body>
+    <div id="list"></div>
+    <div id="forms" class="form-container">
+		<div>Create User Account</div>
+	    <form id="adduser" action="/api/adduser" method="POST">
+		    <label for="username">Username: </label>
+		    <input id="username" type="text" name="username">
+		    <label for="password">Password: </label>
+		    <input id="password" type="text" name="password">
+		    <label for="email">Email: </label>
+		    <input for="email" type="text" name="email">
+		    <button type="submit">Submit</button>
+	    </form>
+		<br>Login User</br>
+	    <form id="loginuser" action="/api/login" method="POST">
+		    <label for="username">Username: </label>
+				<input id="username" type="text" name="username">
+				<label for="password">Password: </label>
+				<input id="password" type="text" name="password">
+		    <button type="submit">Submit</button>
+	    </form>
+		<br>Logout User</br>
+	    <form id="logoutuser" action="/api/logout" method="POST">
+		    <label for="logout">Logout: </label>
+		    <button type="submit">Submit</button>
+	    </form>
+		<br>User Status</br>
+	    <form id="userstatus" action="/api/user" method="POST">
+		    <label for="user">User: </label>
+		    <button type="submit">Submit</button>
+		</form>  
+		<br>Search</br>
+		<form id="search" action="/api/search" method="POST">
+			<label for="searchbox">Search: </label>
+			<input id="searchbox" type="text" name="Search">
+			<label for="only-in-box">Only-In-Box: </label>
+			<input id="only-in-box" type="checkbox" name="onlyInBox">
+			<button type="submit">Submit</button>
+			</form>
+		<br>Convert</br>
+		<form id="convert" action="/api/convert" method="POST">
+			<label for="zoom">Zoom: </label>
+			<input id="zoom" type="text" name="Zoom">
+			<label for="latitude">Latitude: </label>
+			<input id="latitude" type="text" name="Latitude">
+			<label for="longitude">Longitude: </label>
+			<input id="longitude" type="text" name="Longitude">
+			<button type="submit">Submit</button>
+		</form>
+		<br>Route</br>
+		<form id="route" action="/api/route" method="POST">
+			<label for="source-lat">Source Lat: </label>
+			<input id="source-lat" type="text" name="slat">
+			<label for="source-lon">Source Lon: </label>
+			<input id="source-lon" type="text" name="slon">
+			<label for="dest-lat">Dest Lat: </label>
+			<input id="dest-lat" type="text" name="dlat">
+			<label for="dest-lon">Dest Lon: </label>
+			<input id="dest-lon" type="text" name="dlon">
+			<button type="submit">Submit</button>
+		</form>
+		<br>Address</br>
+		<form id="address" action="/api/address" method="POST">
+			<label for="address-latitude">Latitude: </label>
+			<input id="address-latitude" type="text" name="address-latitude">
+			<label for="address-longitude">Longitude: </label>
+			<input id="address-longitude" type="text" name="address-longitude">
+			<button type="submit">Submit</button>
+		</form>
+    </div>
+	<style>
+		.form-container {
+			float: left;
+			width: 50%;
+		}
+	</style>
+	<div id="map"></div>
+	<style>
+      html, body {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+      }
+      #map {
+        /* configure the size of the map */
+        width: 50%;
+        height: 100%;
+      }
+    </style>
+    <script>
+
+		var map = L.map('map', { attributionControl: false, maxBounds: [[-90, -180], [90, 180]], maxBoundsViscosity: 1.0}).setView([0, 0], 2);
+
+		// add the OpenStreetMap tiles
+		L.tileLayer('http://localhost:82/tiles/{z}/{x}/{y}.png', {
+				maxZoom: 19,
+				attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+		}).addTo(map);
+
+		// show the scale bar on the lower left corner
+		L.control.scale({imperial: true, metric: true}).addTo(map);
+
+		// show a marker on the map
+		L.marker({lon: 0, lat: 0}).bindPopup('The center of the universe').addTo(map);
+
+		// List of the markers to store 
+		const markers = [];
+
+		// Remove all markers
+		function removeMarkers() {
+			for (let marker of markers) {
+				map.removeLayer(marker);
+				marker.remove();
+			}
+			markers.length = 0;
+		}
+
+
+		// Load the DOM content 
+  		document.addEventListener('DOMContentLoaded', function() {
+
+			// Event listener for /api/adduser 
+			document.getElementById('adduser').addEventListener('submit', function() {
+
+				event.preventDefault();
+
+				// Get the form data
+				var formData = new FormData(event.target);
+
+				// Get the username, password, and email
+				var username = formData.get('username');
+				var password = formData.get('password');
+				var email = formData.get('email');
+
+				// Construct data 
+				var data = { "username": username, "password": password, "email": email }
+
+				// Fetch the data
+				fetch('/api/adduser', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				}).then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				}).then(data => {
+						console.log(data);
+				}).catch(error => {
+						console.ERROR('Problem with fetch', error);
+				});
+			});
+
+			// Event listener for /api/login
+			document.getElementById('loginuser').addEventListener('submit', function() {
+
+				event.preventDefault();
+
+				// Get the form data 
+				var formData = new FormData(event.target);
+
+				// Get the username and password 
+				var username = formData.get('username');
+				var password = formData.get('password');
+
+				// Construct the data to send
+				var data = { "username": username, "password": password };
+
+				// Fetch /api/login
+				fetch('/api/login', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+					}).then(response => {
+						if (!response.ok) {
+							return response.json().then(error => {
+								console.log(error.message);
+								throw new Error(error.message);
+							});
+						}
+						return response.json();
+					}).then(data => {
+							console.log(data);
+					}).catch(error => {
+							console.ERROR('Problem with fetch', error);
+				});
+			});
+
+			// Event listener for /api/logout
+			document.getElementById('logoutuser').addEventListener('submit', function() {
+
+				event.preventDefault();
+
+				// Construct an empty payload
+				var data = {};
+
+				// Fetch /api/logout
+				fetch('/api/logout', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+					}).then(response => {
+						if (!response.ok) {
+							return response.json().then(error => {
+								console.log(error.message);
+								throw new Error(error.message);
+							});
+						}
+						return response.json();
+					}).then(data => {
+							// If everything is a success, show the form, map, etc 
+							console.log(data);
+					}).catch(error => {
+							console.ERROR('Problem with fetch', error);
+				});
+			});
+
+			// Event listener for /api/user
+			document.getElementById('userstatus').addEventListener('submit', function() {
+
+				event.preventDefault();
+
+				// Construct an empty payload
+				var data = {};
+
+				// Fetch /api/logout
+				fetch('/api/user', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+					}).then(response => {
+						if (!response.ok) {
+							return response.json().then(error => {
+								console.log(error.message);
+								throw new Error(error.message);
+							});
+						}
+						return response.json();
+					}).then(data => {
+							console.log(data);
+					}).catch(error => {
+							console.ERROR('Problem with fetch', error);
+				});
+			});
+
+			// For /api/search
+    		document.getElementById('search').addEventListener('submit', function() {
+
+      			event.preventDefault();
+
+				// Get the minimum and maximum latitudes and longitudes
+				var minLat = map.getBounds().getSouthWest().lat;
+				var minLon = map.getBounds().getSouthWest().lng;
+				var maxLat = map.getBounds().getNorthEast().lat;
+				var maxLon = map.getBounds().getNorthEast().lng;
+
+				// Get the form data 
+				var formData = new FormData(event.target);
+
+				// Get the field data
+				var searchTerm = formData.get('Search');
+				var onlyInBox = true; 
+				if(formData.get('onlyInBox') === undefined || formData.get('onlyInBox') === null) {
+					onlyInBox = false;
+				}
+				
+				// Construct the bounding box 
+				var bbox = {
+
+					minLat: minLat,
+					minLon: minLon,
+					maxLat: maxLat,
+					maxLon: maxLon
+				};
+
+				// Construct the body to send 
+				var data = { "bbox": bbox, "onlyInBox": onlyInBox, "searchTerm": searchTerm };
+
+				// Make API request
+				fetch('/api/search', {
+					method: 'POST',
+					headers: {
+					'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				}).then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+					}).then(data => {
+						var list = document.getElementById("list")
+						while(list.firstChild) {
+							list.removeChild(list.firstChild);
+						}
+						if(onlyInBox) {
+						removeMarkers();
+							for (let place of data) {
+								var marker = L.marker([place["coordinates"]["lat"], place["coordinates"]["lon"]]).addTo(map);
+								marker.bindPopup(place["name"]);
+								marker.on('click', function() {
+								map.setView([place["coordinates"]["lat"], place["coordinates"]["lon"]], 14);
+								});
+								markers.push(marker);
+							}
+						} else {
+						if(data.length === 1) {
+							removeMarkers();
+							var marker = L.marker([data[0]["coordinates"]["lat"], data[0]["coordinates"]["lon"]]).addTo(map);
+							marker.bindPopup(data[0]["name"]);
+							map.setView([data[0]["coordinates"]["lat"], data[0]["coordinates"]["lon"]], 14);
+							markers.push(marker);
+						} else if (data.length > 1) { 
+							var list = document.getElementById('list');
+							list.innerHTML = '';
+							for (let place of data) {
+								var listItem = document.createElement('li');
+								listItem.textContent = place["name"];
+								listItem.addEventListener('click', function() {
+								map.setView([place["coordinates"]["lat"], place["coordinates"]["lon"]], 14);
+							});
+							listItem.style.color = 'blue'; // Change the text color
+							listItem.style.backgroundColor = 'yellow'; // Change the background color
+							listItem.style.padding = '10px'; // Add some padding
+							listItem.style.marginBottom = '10px'; // Add some space between list items
+							listItem.style.cursor = 'pointer'; // Change the cursor to a hand when hovering over the list item
+							list.appendChild(listItem);
+							}
+						}
+					}
+					}).catch(error => {
+							console.ERROR('Problem with fetch', error);
+					});
+			});
+
+			// For /convert
+			document.getElementById('convert').addEventListener('submit', function(event) {
+
+				// Prevent default
+				event.preventDefault();
+
+				// Get the form data
+				var formData = new FormData(event.target);
+
+				// Get the individual fields
+				var zoom = formData.get('Zoom');
+				var latitude = formData.get('Latitude');
+				var longitude = formData.get('Longitude');
+
+				// Construct the data to send 
+				var data = {
+
+					zoom: parseInt(zoom),
+					lat: parseFloat(latitude),
+					long: parseFloat(longitude)
+				};
+
+				// Fetch the data
+				fetch('/api/convert', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				}).then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				}).then(data => {
+						console.log(data);
+				}).catch(error => {
+						console.ERROR('Problem with fetch', error);
+				});
+			});
+
+
+			// For /api/route
+			document.getElementById('route').addEventListener('submit', function() {
+
+				event.preventDefault();
+
+				// Get the form data
+				var formData = new FormData(event.target);
+
+				// Get the individual fields
+				var slat = formData.get('slat');
+				var slon = formData.get('slon');
+				var dlat = formData.get('dlat');
+				var dlon = formData.get('dlon');
+
+				// Constuct source 
+				var source = {
+
+					lat: parseFloat(slat),
+					lon: parseFloat(slon) 
+				};
+
+				// Construct destination
+				var destination = {
+					
+					lat: parseFloat(dlat), 
+					lon: parseFloat(dlon) 
+				};
+
+				// Construct data
+				var data = { "source": source, "destination": destination };
+
+				// Fetch the data 
+				fetch('/api/route', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				}).then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				}).then(data => {
+
+					// Get the descriptions and coordinates from the data 
+					const descriptions = data.map(item => item.description);
+					const coordinates = data.map(item => item.coordinates);
+
+					// Now add the route to the map display
+					const routeCoordinates = coordinates.map(coord => [coord.lat, coord.lon]);
+					const route = L.polyline(routeCoordinates, {color: 'blue'}).addTo(map);
+
+					// Get the list of coordinates to only add a marker to 
+					const markers_only = [];
+					const mod_descriptions = [];
+
+					// Add the first coordinate and the first description into the respectie lists 
+					markers_only.push(coordinates[0]);
+					mod_descriptions.push(descriptions[0]);
+
+					// Parse only the required coordinates we need to add markers on 
+					let current_description = descriptions[0];
+					for(let i = 1; i < descriptions.length; i++) {
+						if (current_description !== descriptions[i]) {
+							markers_only.push(coordinates[i]);
+							mod_descriptions.push(descriptions[i]);
+							current_description = descriptions[i];
+						}
+					}
+
+					// Add markers for each step
+					markers_only.forEach((coord, index) => {
+						// Add marker to the map 
+						const marker = L.marker([coord.lat, coord.lon]).addTo(map);
+						marker.bindPopup(mod_descriptions[index]);
+
+						// Add event listener for the marker 
+						marker.on('click', async () => {
+							
+							// Construct the TL and BR coordinates and set our delta 0.01 for now
+							const latitude = coord.lat;
+							const longitude = coord.lon;
+							const delta = 0.01; // Might change this 
+
+							const TL = { lat: latitude + delta, lon: longitude - delta };
+							const BR = { lat: latitude - delta, lon: longitude + delta }; 
+
+							// Make GET request to the endpoint 
+							fetch(`/turn/${TL.lat},${TL.lon}/${BR.lat},${BR.lon}.png`) 
+								.then(response => response.blob())
+								.then(blob => {
+									// Create an object URL for the blob
+									const imgURL = URL.createObjectURL(blob);
+									// Use the URL in an img element
+									const img = document.createElement('img');
+									img.src = imgURL;
+									
+									popup.setContent(img);
+								})
+								.catch(err => console.error(err));
+						})
+					});				
+				}).catch(error => {
+						console.ERROR('Problem with fetch', error);
+				});
+			});
+  		});
+    </script>
+  </body>
+</html>

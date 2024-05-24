@@ -1,0 +1,80 @@
+services:
+  client:
+    image: nginx:latest
+    ports:
+      - '81:80'
+    volumes:
+      - ./client/index.html:/usr/share/nginx/html/index.html
+      - ./configs/frontend-server.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - loadbalancer-express-server 
+    networks:
+      - dist-maps-app
+
+  backend-server:
+    image: maps-server
+    build: ./server
+    ports:
+      - '8000:8000'
+    depends_on:
+      - mongo
+      - mailhog 
+      - loadbalancer-tile-server
+    networks:
+      - dist-maps-app
+
+
+  loadbalancer-express-server:
+    image: nginx:latest
+    ports:
+      - '82:80'
+    volumes:
+      - ./configs/express-servers.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend-server
+    networks:
+     - dist-maps-app
+  
+
+  loadbalancer-tile-server:
+    image: nginx:latest
+    ports:
+      - '83:80'
+    volumes:
+      - ./configs/tile-servers.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - tileserver
+    networks:
+     - dist-maps-app
+  
+  tileserver:
+    image: overv/openstreetmap-tile-server
+    ports:
+      - '8080:80'
+    volumes:
+      - osm-data:/data/database/
+    command: run
+    networks:
+      - dist-maps-app
+  
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - '8025:8025'
+    networks:
+      - dist-maps-app
+      
+  mongo:
+    image: mongo:5.0
+    ports:
+      - '27017:27017'
+    volumes:
+      - 'mongo:/data/db'
+    networks:
+      - dist-maps-app
+  
+networks:
+  dist-maps-app:
+volumes:
+  mongo:
+  osm-data:

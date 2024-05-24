@@ -1,0 +1,13 @@
+services:
+  osm-import:
+    image: overv/openstreetmap-tile-server
+    volumes:
+      - /projects/maps-clone/map-data/us-northeast-latest.osm.pbf:/data/region.osm.pbf
+      - osm-data:/data/database/
+    command: import
+    networks:
+      - dist-maps-app
+networks:
+  dist-maps-app:
+volumes:
+  osm-data:
