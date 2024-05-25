@@ -2,7 +2,7 @@
 
 The goal of this project is to develop a distributed systems maps clone. Given the geographical data of various regions, we are responisble for storing geographical data on a geographical supproted database and develop a backend server capable of making calls to our database. In subsequent distributions of the project, caching will be implemented in order to achieve QoS constraints.
 
-This project was able to handle a QoS target requirement of 1600 requests per second (rps), wit 95% of the requests responding under 50 ms. 
+This project was able to handle a QoS target requirement of 1600 requests per second (rps), with 95% of the requests responding under 50 ms. 
 
 # Technologies Used:
 
@@ -17,17 +17,22 @@ This project was able to handle a QoS target requirement of 1600 requests per se
 
 # Disclaimers:
 
+## Disclaimer #1:
 
 Users will have to downloaded the following onto their system in order to utilize the project:
 
 
 - Docker 
 - Node 
-- NPM 
 
 
-Due to GitHub's 
+## Disclaimer #2:
 
+Due to GitHub's size limit of 100 MBs and the need to use GitLFS, it is best to download the map data from the following website:
+
+
+```
+```
 
 # Installation/Usage
 
@@ -39,14 +44,14 @@ Will come to this later
 To run:
 
 ```
-docker-compose -f docker-compose-first.yml up 
-docker-compose -f docker-compose-second.yml up 
+docker-compose -f docker-compose-first.yml up --build
+docker-compose -f docker-compose-second.yml up --build
 ```
 
 To run in detach mode:
 ```
-docker-compose -f docker-compose-first.yml up -d
-docker-compose -f docker-compose-second.yml up -d 
+docker-compose -f docker-compose-first.yml up --build -d
+docker-compose -f docker-compose-second.yml up --build -d 
 ```
 
 On your browser's search bar, type the following:
@@ -55,9 +60,9 @@ On your browser's search bar, type the following:
 http://localhost:81/
 ```
 
-# Interaction
+# User Interation 
 
-You can interact with the following:
+## User Forms 
 
 - Create Account
     - Username (required): Input the intended username (can't use duplicate username)
@@ -65,26 +70,37 @@ You can interact with the following:
     - Password (required): Input the intended password 
 
 - Login
-    - Username (required): 
-    - Password (required):
+    - Username (required): Input an existing username
+    - Password (required): Input an existing password 
+
+- Logout
+    - If the user is logged in, they can press submit to logout and terminate the user session 
+
+- User
+    - If the user is logged in, they can press submit to gain information about their current session 
+
+
+## Map Forms 
+
+- 
+
 
 # Running the program with multiple instances
 
 To run multiple instances of the backend server:
 
 ```
-docker-compose -f docker-compose-second.yml --scale server={# of servers} up -d 
+docker-compose -f docker-compose-second.yml --scale server={# of servers} up --build -d 
 ```
 
 To run multiple instances of the tile server: 
 
 ```
-docker-compose -f docker-compose-second.yml --scale tileserver={# of servers} up -d 
+docker-compose -f docker-compose-second.yml --scale tileserver={# of servers} up --build -d 
 ```
 
 To run both, multiple instances of the backend server and tileserver, run: 
 
 ```
-docker-compose -f docker-compose-second.yml --scale server={# of servers} --scale tileserver={# of servers} up -d 
+docker-compose -f docker-compose-second.yml --scale server={# of servers} --scale tileserver={# of servers} up --build -d 
 ```
-
