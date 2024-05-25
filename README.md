@@ -25,6 +25,21 @@ Users will have to downloaded the following onto their system in order to utiliz
 - Docker 
 - Docker-compose 
 
+Go to the scripts directory and run the docker script  
+
+```
+chmod +x docker-install.sh
+./docker-install.sh
+```
+
+Do the same for the docker-compose script 
+
+```
+chmod +x docker-compose-install.sh
+./docker-compose-install.sh
+```
+
+__Note: This assumes you are using a Linux distribution, there is currently no equivalent script for Windows yet__ 
 
 ## Disclaimer #2:
 
