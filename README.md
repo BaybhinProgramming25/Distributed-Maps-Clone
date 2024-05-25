@@ -55,7 +55,18 @@ On your browser's search bar, type the following:
 http://localhost:81/
 ```
 
-You can now see the project and interact with the forms provied
+# Interaction
+
+You can interact with the following:
+
+- Create Account
+    - Username (required): Input the intended username (can't use duplicate username)
+    - Email (required): Input the intended email (can't use duplicate email)
+    - Password (required): Input the intended password 
+
+- Login
+    - Username (required): 
+    - Password (required):
 
 # Running the program with multiple instances
 
