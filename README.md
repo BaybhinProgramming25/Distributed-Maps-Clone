@@ -32,9 +32,10 @@ Due to GitHub's size limit of 100 MBs and the need to use GitLFS, it is best to 
 
 
 ```
+https://download.geofabrik.de/
 ```
 
-Once downloaded the intended .osm.pbf file, __place the file in the map-data folder__
+Once you've downloaded the intended .osm.pbf file, __place the file in the map-data folder__
 
 
 # Running the program with single server instance
@@ -108,9 +109,19 @@ docker-compose -f docker-compose-second.yml --scale server={# of servers} --scal
     - Search Term (required): Input the name of the location you want to search 
     - Only-In-Box (required): This determines whether or not objects within the bounding box of the search term should be included or not. If set to true, then only objects within the query bbox are returned, with coordinates pointing to the center of the __VISIBLE PORTION__ of the object within the queried bounding box. If false, then coordinates are the center of the object and bbox is the bounding box that includes the entire object.
 
-    A l
 
 - Convert
     - Zoom (required): A __numerical value__ representing the zoom level 
-    - Latitude (required) A __numerical value__ representing the latitude 
-    - Longitude  (required) A __numerical value__ representing the longitude
+    - Latitude (required):"A __numerical value__ representing the latitude 
+    - Longitude (required): A __numerical value__ representing the longitude
+
+
+- Route 
+    - Source Lat (required): A __numerical value__ representing the source latitude 
+    - Source Lon (required): A __numerical value__ representing the source longitude
+    - Dest Lat (required): A __numerical value__ representing the destination latitude
+    - Dest Lon (required): A __numerical value__ representing  the destination longitude 
+
+- Address
+    - Latitude (required): A __numerical value__ representing the latitude
+    - Longitude (required): A __numerical value__ representing the longitude 
